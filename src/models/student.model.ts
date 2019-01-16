@@ -17,7 +17,6 @@ export class Student extends Entity {
 
   @property({
     type: 'boolean',
-    default: false,
   })
   suspended?: boolean;
 
