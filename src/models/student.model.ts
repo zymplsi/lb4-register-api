@@ -2,7 +2,7 @@ import {Entity, model, property, hasMany} from '@loopback/repository';
 import {Registration} from './registration.model';
 
 @model()
-export class Teacher extends Entity {
+export class Student extends Entity {
   @property({
     type: 'number',
     id: true,
@@ -15,10 +15,16 @@ export class Teacher extends Entity {
   })
   email: string;
 
+  @property({
+    type: 'boolean',
+    default: false,
+  })
+  suspended?: boolean;
+
   @hasMany(() => Registration)
   registrations: Registration[];
 
-  constructor(data?: Partial<Teacher>) {
+  constructor(data?: Partial<Student>) {
     super(data);
   }
 }

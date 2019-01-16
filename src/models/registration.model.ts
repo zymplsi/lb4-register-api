@@ -1,5 +1,6 @@
 import {Entity, model, property, belongsTo} from '@loopback/repository';
 import {Teacher} from './teacher.model';
+import {Student} from './student.model';
 
 @model()
 export class Registration extends Entity {
@@ -11,6 +12,9 @@ export class Registration extends Entity {
 
   @belongsTo(() => Teacher)
   teacherId?: number;
+
+  @belongsTo(() => Student)
+  studentId?: number;
 
   getId() {
     return this.id;

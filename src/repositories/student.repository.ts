@@ -1,22 +1,21 @@
 import {
   DefaultCrudRepository,
-  // juggler,
+  juggler,
   HasManyRepositoryFactory,
   repository,
-  juggler,
 } from '@loopback/repository';
-import {Teacher, Registration} from '../models';
+import {Student, Registration} from '../models';
 // import {RegisterDbDataSource} from '../datasources';
 import {inject, Getter} from '@loopback/core';
 import {RegistrationRepository} from './registration.repository';
 
-export class TeacherRepository extends DefaultCrudRepository<
-  Teacher,
-  typeof Teacher.prototype.id
+export class StudentRepository extends DefaultCrudRepository<
+  Student,
+  typeof Student.prototype.id
 > {
   public readonly registrations: HasManyRepositoryFactory<
     Registration,
-    typeof Teacher.prototype.id
+    typeof Student.prototype.id
   >;
 
   constructor(
@@ -26,7 +25,7 @@ export class TeacherRepository extends DefaultCrudRepository<
       RegistrationRepository
     >,
   ) {
-    super(Teacher, dataSource);
+    super(Student, dataSource);
     this.registrations = this.createHasManyRepositoryFactoryFor(
       'registrations',
       registrationGetterRepository,
