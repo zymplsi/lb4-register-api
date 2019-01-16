@@ -1,13 +1,22 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Registration} from './registration.model';
 
 @model()
 export class Teacher extends Entity {
   @property({
+    type: 'number',
+    id: true,
+  })
+  id?: number;
+
+  @property({
     type: 'string',
     id: true,
-    required: true,
   })
   email: string;
+
+  @hasMany(() => Registration)
+  registrations: Registration[];
 
   constructor(data?: Partial<Teacher>) {
     super(data);

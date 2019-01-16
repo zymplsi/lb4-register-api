@@ -92,7 +92,7 @@ export class TeacherController {
       },
     },
   })
-  async findById(@param.path.string('id') id: string): Promise<Teacher> {
+  async findById(@param.path.number('id') id: number): Promise<Teacher> {
     return await this.teacherRepository.findById(id);
   }
 
@@ -104,7 +104,7 @@ export class TeacherController {
     },
   })
   async updateById(
-    @param.path.string('id') id: string,
+    @param.path.number('id') id: number,
     @requestBody() teacher: Teacher,
   ): Promise<void> {
     await this.teacherRepository.updateById(id, teacher);
@@ -118,7 +118,7 @@ export class TeacherController {
     },
   })
   async replaceById(
-    @param.path.string('id') id: string,
+    @param.path.number('id') id: number,
     @requestBody() teacher: Teacher,
   ): Promise<void> {
     await this.teacherRepository.replaceById(id, teacher);
@@ -131,7 +131,7 @@ export class TeacherController {
       },
     },
   })
-  async deleteById(@param.path.string('id') id: string): Promise<void> {
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.teacherRepository.deleteById(id);
   }
 }
