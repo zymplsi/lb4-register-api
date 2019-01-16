@@ -16,13 +16,13 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {Teacher} from '../models';
-import {TeacherRepository} from '../repositories';
+import {Teacher} from '../../models';
+import {TeacherRepository} from '../../repositories';
 
 export class TeacherController {
   constructor(
     @repository(TeacherRepository)
-    public teacherRepository : TeacherRepository,
+    public teacherRepository: TeacherRepository,
   ) {}
 
   @post('/teachers', {

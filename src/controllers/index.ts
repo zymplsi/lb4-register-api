@@ -1,4 +1,4 @@
 export * from './ping.controller';
-// export * from './teacher.controller';
-// export * from './registration.controller';
-export * from './student.controller';
+export * from './private/teacher.controller';
+export * from './private/registration.controller';
+export * from './private/student.controller';

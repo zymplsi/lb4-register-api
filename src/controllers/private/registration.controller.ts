@@ -16,13 +16,13 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {Registration} from '../models';
-import {RegistrationRepository} from '../repositories';
+import {Registration} from '../../models';
+import {RegistrationRepository} from '../../repositories';
 
 export class RegistrationController {
   constructor(
     @repository(RegistrationRepository)
-    public registrationRepository : RegistrationRepository,
+    public registrationRepository: RegistrationRepository,
   ) {}
 
   @post('/registrations', {
@@ -33,7 +33,9 @@ export class RegistrationController {
       },
     },
   })
-  async create(@requestBody() registration: Registration): Promise<Registration> {
+  async create(
+    @requestBody() registration: Registration,
+  ): Promise<Registration> {
     return await this.registrationRepository.create(registration);
   }
 
@@ -64,7 +66,8 @@ export class RegistrationController {
     },
   })
   async find(
-    @param.query.object('filter', getFilterSchemaFor(Registration)) filter?: Filter,
+    @param.query.object('filter', getFilterSchemaFor(Registration))
+    filter?: Filter,
   ): Promise<Registration[]> {
     return await this.registrationRepository.find(filter);
   }
