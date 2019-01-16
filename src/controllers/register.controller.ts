@@ -1,23 +1,5 @@
-import {
-  Count,
-  CountSchema,
-  Filter,
-  repository,
-  Where,
-  WhereBuilder,
-} from '@loopback/repository';
-import {
-  post,
-  param,
-  get,
-  getFilterSchemaFor,
-  getWhereSchemaFor,
-  patch,
-  put,
-  del,
-  requestBody,
-  HttpErrors,
-} from '@loopback/rest';
+import {repository, WhereBuilder} from '@loopback/repository';
+import {post, requestBody, HttpErrors} from '@loopback/rest';
 import {Register, Student, Registration} from '../models';
 import {
   RegistrationRepository,
@@ -38,7 +20,7 @@ export class RegisterController {
   @post('/register', {
     responses: {
       '204': {
-        description: 'Register model instance',
+        description: 'register one or more students to a specified teacher',
         content: {'application/json': {schema: {'x-ts-type': Register}}},
       },
     },
@@ -47,22 +29,22 @@ export class RegisterController {
     let registrations = [];
     const {teacher, students} = register;
 
-    const emailsValid = students.every(email => email.length > 0);
+    const allStudentsEmailValid = students.every(email => email.length > 0);
 
-    if (!emailsValid) {
+    if (!allStudentsEmailValid) {
       throw HttpErrors.BadRequest;
     }
 
-    const where = new WhereBuilder();
-    const foundTeacher = await this.teacherRepository.findOne(
-      where.exists(teacher),
-    );
+    const whereBuilder = new WhereBuilder();
+    const where = whereBuilder.eq('email', teacher);
+
+    const foundTeacher = await this.teacherRepository.find(where);
 
     if (!foundTeacher) {
       throw HttpErrors.BadRequest;
     }
 
-    for (let email in students) {
+    for (let email of students) {
       const student = await this.studentRepository.create(
         new Student({
           email: email,
@@ -70,7 +52,7 @@ export class RegisterController {
       );
       const registration = await this.registrationRepository.create(
         new Registration({
-          teacherId: foundTeacher.getId(),
+          teacherId: foundTeacher[0].getId(),
           studentId: student.getId(),
         }),
       );
