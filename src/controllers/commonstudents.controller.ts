@@ -1,18 +1,16 @@
 import {
-  Filter,
   repository,
   Where,
   WhereBuilder,
   FilterBuilder,
 } from '@loopback/repository';
 import {param, get} from '@loopback/rest';
-import {CommonStudents, Teacher} from '../models';
+import {CommonStudents} from '../models';
 import {
   RegistrationRepository,
   TeacherRepository,
   StudentRepository,
 } from '../repositories';
-// import {pathExists} from 'fs-extra';
 
 export class CommonStudentsController {
   constructor(
@@ -34,50 +32,45 @@ export class CommonStudentsController {
     },
   })
   async find(
-    @param.array('teacher', 'query', {type: 'string'}) names: string[],
+    @param.array('teacher', 'query', {type: 'string'}) emails: string[],
   ): Promise<string> {
-    const teacherIdList = [];
-    const studentIdList = [];
-    const studentEmaiList = [];
-    let teachers: Teacher[];
-    // let students: Student[];
-    let where: Where;
-    let filter: Filter;
-    let filterBuilder = new FilterBuilder();
-    let whereBuilder = new WhereBuilder();
+    let whereEmails: Where;
+    let whereTeachersId: Where;
 
-    where = whereBuilder.inq('id', names);
-    filter = filterBuilder
-      .fields('id')
-      .where(where)
-      .build();
-    teachers = await this.teacherRepository.find(filter);
-
-    if (teachers.length > 0) {
-      debugger;
-      console.log(teachers[0]);
-      teacherIdList.push(teachers[0].id);
+    /** get id of teachers from Teachers repository */
+    const whereEmailsBuilder = new WhereBuilder();
+    if (Array.isArray(emails)) {
+      whereEmails = whereEmailsBuilder.inq('email', emails);
+    } else {
+      whereEmails = whereEmailsBuilder.eq('email', emails);
     }
+    let teachers = await this.teacherRepository.find(whereEmails);
+    const teachersId = teachers.map(teacher => teacher.id);
 
-    for (let teacherId of teacherIdList) {
-      let student = await this.registrationRepository.findById(teacherId);
-      if (student) {
-        studentIdList.push(student.studentId);
-      }
-    }
+    /*** get students ids from Registration repository that has teachers ids*/
+    const whereTeachersIdBuilder = new WhereBuilder();
+    whereTeachersId = whereTeachersIdBuilder.inq('teacherId', teachersId);
+    const studentRegistrations = await this.registrationRepository.find(
+      whereTeachersId,
+    );
+    const studentIds = studentRegistrations.map(
+      registration => registration.studentId,
+    );
 
-    where = whereBuilder.inq('id', studentIdList);
-    filter = filterBuilder
-      .fields('email')
-      .where(where)
+    /** get students from the Student repositor that has the student ids  */
+    const whereStudentsBuilder = new WhereBuilder();
+    const whereStudents = whereStudentsBuilder.inq('id', studentIds);
+    const whereStudentsFilter = new FilterBuilder();
+    const whereStudentsOrdered = whereStudentsFilter
+      .order('email')
+      .where(whereStudents)
       .build();
-    let students = await this.studentRepository.find(filter);
+    const students = await this.studentRepository.find(whereStudentsOrdered);
 
-    // debugger;
-    // const where = new WhereBuilder();
-    // where.eq();
+    /** get students email and remove duplicates*/
+    const studentEmails = students.map(student => student.email);
+    const result = {students: [...new Set(studentEmails)]};
 
-    // this.registrationRepository.console.log(names);
-    return `Hello, ${JSON.stringify(students)}`;
+    return JSON.stringify(result);
   }
 }
