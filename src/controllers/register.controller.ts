@@ -1,11 +1,16 @@
-import {repository, WhereBuilder} from '@loopback/repository';
+import {repository} from '@loopback/repository';
 import {post, requestBody, HttpErrors} from '@loopback/rest';
-import {Register, Student, Registration, Teacher} from '../models';
+import {Register, Student, Registration} from '../models';
 import {
   RegistrationRepository,
   TeacherRepository,
   StudentRepository,
 } from '../repositories';
+import {
+  getTeacher,
+  getStudent,
+  getStudentsRegisteredWithTeacher,
+} from './helper';
 
 export class RegisterController {
   constructor(
@@ -33,12 +38,8 @@ export class RegisterController {
       throw new HttpErrors[403](`require students email!`);
     }
 
-    /** get teacher from Teacher repository */
-    const teacher = await getTeacherFromRepository(
-      teacherEmail,
-      this.teacherRepository,
-    );
-
+    /** get teacher from Teacher repository, throw Error if doesnt exist */
+    const teacher = await getTeacher(teacherEmail, this.teacherRepository);
     if (!teacher) {
       throw new HttpErrors[403](`${teacherEmail} does not exist!`);
     }
@@ -46,10 +47,7 @@ export class RegisterController {
     /** get students and create student in Student repository if doesn't exist */
     const students = await Promise.all(
       studentEmails.map(async email => {
-        let student = await getStudentFromRepository(
-          email,
-          this.studentRepository,
-        );
+        let student = await getStudent(email, this.studentRepository);
         if (!student) {
           student = await this.studentRepository.create(
             new Student({
@@ -117,35 +115,3 @@ export class RegisterController {
     );
   }
 }
-
-const getTeacherFromRepository = async (
-  email: string,
-  teacherRepository: TeacherRepository,
-) => {
-  const whereTeacherEmailBuilder = new WhereBuilder();
-  const whereTeacherEmail = whereTeacherEmailBuilder.eq('email', email);
-  return await teacherRepository.findOne(whereTeacherEmail);
-};
-
-const getStudentFromRepository = async (
-  email: string,
-  studentRepository: StudentRepository,
-) => {
-  const whereStudentEmailBuilder = new WhereBuilder();
-  const whereStudentEmail = whereStudentEmailBuilder.eq('email', email);
-  return await studentRepository.findOne(whereStudentEmail);
-};
-
-const getStudentsRegisteredWithTeacher = async (
-  student: Student | null,
-  teacher: Teacher,
-  registrationRepository: RegistrationRepository,
-) => {
-  if (!student) return [];
-  const whereRegisteredBuilder = new WhereBuilder();
-  const whereRegistered = whereRegisteredBuilder.and([
-    {studentId: student.id},
-    {teacherId: teacher.id},
-  ]);
-  return await registrationRepository.find(whereRegistered);
-};
