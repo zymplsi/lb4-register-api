@@ -1,6 +1,6 @@
 import {repository, WhereBuilder} from '@loopback/repository';
-import {post, requestBody, HttpErrors} from '@loopback/rest';
-import {RetrieveForNotifications, Student, Registration} from '../models';
+import {post, requestBody} from '@loopback/rest';
+import {RetrieveForNotifications} from '../models';
 import {
   RegistrationRepository,
   TeacherRepository,
@@ -40,15 +40,20 @@ export class RetrieveForNotificationsController {
     const teacherEmail = retrievefornotifications.teacher;
     const notification = retrievefornotifications.notification;
 
+    /** parse student's email from messade */
     const parsedEmails = parseMentionedeMails(notification);
+
+    /** get all not suspended students*/
     const notSuspendedStudents = await getStudentsNotSuspended(
       this.studentRepository,
     );
 
+    /** get not suspeneded students email */
     const notSuspendedStudentsEmail = notSuspendedStudents.map(
       student => student.email,
     );
 
+    /** filter mentioned students email against not suspended student list */
     const mentionedNotSuspendedStudentsEmail = [];
     if (parsedEmails) {
       for (let email of parsedEmails) {
@@ -58,8 +63,10 @@ export class RetrieveForNotificationsController {
       }
     }
 
+    /** get teacher info */
     const teacher = await getTeacher(teacherEmail, this.teacherRepository);
 
+    /** get list of not suspended students registered with the teacher*/
     const getStudentsRegisteredWithTeacherResult = await Promise.all(
       notSuspendedStudents.map(async student => {
         return await getStudentsRegisteredWithTeacher(
@@ -70,27 +77,34 @@ export class RetrieveForNotificationsController {
       }),
     );
 
+    /** get not suspended and registered student their registrations ids */
     const registeredStudentsId = getStudentsRegisteredWithTeacherResult.map(
       registration =>
         registration.length > 0 ? registration[0].studentId : null,
     );
+
+    /** get registered and not suspended full info from their registration ids */
     const registeredStudents = await getStudentsByIds(
       registeredStudentsId,
       this.studentRepository,
     );
+    /** get the email for the not suspended and registered students */
     const registeredStudentsEmail = registeredStudents.map(
       student => student.email,
     );
 
+    /** create the email recipients  */
     const recipients = [
       ...mentionedNotSuspendedStudentsEmail,
       ...registeredStudentsEmail,
     ];
 
+    /** remove duplicate in email recipient list*/
     const filteredRecipients = recipients.filter((keyword, index) => {
       return recipients.lastIndexOf(keyword) === index;
     });
 
+    /** send it out!*/
     return JSON.stringify({recipients: filteredRecipients});
   }
 }
@@ -102,85 +116,3 @@ export const getStudentsNotSuspended = async (
   const whereStudentId = whereStudentIdBuilder.eq('suspended', false);
   return await studentRepository.find(whereStudentId);
 };
-
-//     if (studentEmails.length === 0) {
-//       throw new HttpErrors[403](`require students email!`);
-//     }
-
-//     /** get teacher from Teacher repository, throw Error if doesnt exist */
-//     const teacher = await getTeacher(teacherEmail, this.teacherRepository);
-//     if (!teacher) {
-//       throw new HttpErrors[403](`${teacherEmail} does not exist!`);
-//     }
-
-//     /** get students and create student in Student repository if doesn't exist */
-//     const students = await Promise.all(
-//       studentEmails.map(async email => {
-//         let student = await getStudent(email, this.studentRepository);
-//         if (!student) {
-//           student = await this.studentRepository.create(
-//             new Student({
-//               email: email,
-//               suspended: false,
-//             }),
-//           );
-//         }
-//         return student;
-//       }),
-//     );
-
-//     /** check if students have registered with this teacher*/
-//     const getStudentsRegisteredWithTeacherResult = await Promise.all(
-//       students.map(async student => {
-//         return await getStudentsRegisteredWithTeacher(
-//           student,
-//           teacher,
-//           this.registrationRepository,
-//         );
-//       }),
-//     );
-
-//     /** filter empty arrays from the registered student list*/
-//     const studentsRegisteredWithTeacher = getStudentsRegisteredWithTeacherResult.filter(
-//       student => {
-//         return student && student.length > 0 ? true : false;
-//       },
-//     );
-
-//     /** generate students Id list */
-//     const studentsIdList = await Promise.all(
-//       students.map(student => student.id),
-//     );
-
-//     /** list students already registered with this teacher to ensure
-//      * no duplicate entries
-//      */
-//     const studentsRegisteredWithTeacherIdList = await Promise.all(
-//       studentsRegisteredWithTeacher.map(registration => {
-//         console.log(registration);
-//         return registration[0].studentId;
-//       }),
-//     );
-
-//     /** list new students not registered with this teacher*/
-//     const studentsNotRegisteredWithTeacherIdList = await Promise.all(
-//       studentsIdList.filter(
-//         studentId => !studentsRegisteredWithTeacherIdList.includes(studentId),
-//       ),
-//     );
-
-//     /** register new student with this teacher*/
-//     await Promise.all(
-//       studentsNotRegisteredWithTeacherIdList.map(
-//         async studentIdNotRegistered => {
-//           await this.registrationRepository.create(
-//             new Registration({
-//               teacherId: teacher.id,
-//               studentId: studentIdNotRegistered,
-//             }),
-//           );
-//         },
-//       ),
-//     );
-// }
-// }
