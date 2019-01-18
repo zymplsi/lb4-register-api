@@ -1,8 +1,6 @@
 import {
   repository,
-  Where,
   WhereBuilder,
-  FilterBuilder,
 } from '@loopback/repository';
 import {param, get} from '@loopback/rest';
 import {CommonStudents} from '../models';
@@ -11,6 +9,7 @@ import {
   TeacherRepository,
   StudentRepository,
 } from '../repositories';
+import {getCommonNumber, getStudentFromIdList, getTeacherIds} from './helper';
 
 export class CommonStudentsController {
   constructor(
@@ -33,44 +32,36 @@ export class CommonStudentsController {
   })
   async find(
     @param.array('teacher', 'query', {type: 'string'}) emails: string[],
-  ): Promise<string> {
-    let whereEmails: Where;
-    let whereTeachersId: Where;
-
-    /** get id of teachers from Teachers repository */
-    const whereEmailsBuilder = new WhereBuilder();
-    if (Array.isArray(emails)) {
-      whereEmails = whereEmailsBuilder.inq('email', emails);
-    } else {
-      whereEmails = whereEmailsBuilder.eq('email', emails);
-    }
-    let teachers = await this.teacherRepository.find(whereEmails);
+  ) {
+    /** get list of all teacher ids*/
+    const teachers = await getTeacherIds(emails, this.teacherRepository);
     const teachersId = teachers.map(teacher => teacher.id);
 
-    /*** get students ids from Registration repository that has teachers ids*/
-    const whereTeachersIdBuilder = new WhereBuilder();
-    whereTeachersId = whereTeachersIdBuilder.inq('teacherId', teachersId);
-    const studentRegistrations = await this.registrationRepository.find(
-      whereTeachersId,
-    );
-    const studentIds = studentRegistrations.map(
-      registration => registration.studentId,
+    /** get list of registered teachers */
+    const teachersRegistations = await Promise.all(
+      teachersId.map(async teacherId => {
+        const whereTeachersIdBuilder = new WhereBuilder();
+        const whereTeachersId = whereTeachersIdBuilder.eq(
+          'teacherId',
+          teacherId,
+        );
+        return await this.registrationRepository.find(whereTeachersId);
+      }),
     );
 
-    /** get students from the Student repositor that has the student ids  */
-    const whereStudentsBuilder = new WhereBuilder();
-    const whereStudents = whereStudentsBuilder.inq('id', studentIds);
-    const whereStudentsFilter = new FilterBuilder();
-    const whereStudentsOrdered = whereStudentsFilter
-      .order('email')
-      .where(whereStudents)
-      .build();
-    const students = await this.studentRepository.find(whereStudentsOrdered);
+    /** get list of students ids for each registered teacher */
+    const teacherStudentIds = teachersRegistations.map(teacherRegistations => {
+      return teacherRegistations.map(registration => registration.studentId);
+    });
 
-    /** get students email and remove duplicates*/
+    /** get list of students emails common to registered teachers */
+    const commonStudentIds = getCommonNumber(teacherStudentIds);
+    const students = await getStudentFromIdList(
+      commonStudentIds,
+      this.studentRepository,
+    );
     const studentEmails = students.map(student => student.email);
-    const result = {students: [...new Set(studentEmails)]};
 
-    return JSON.stringify(result);
+    return JSON.stringify({students: studentEmails});
   }
 }
