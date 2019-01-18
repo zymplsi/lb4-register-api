@@ -3,3 +3,4 @@ export * from './registration.model';
 export * from './student.model';
 export * from './register.model';
 export * from './common-students.model';
+export * from './retrievefornotifications.model';

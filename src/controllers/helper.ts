@@ -24,12 +24,22 @@ export const getStudent = async (
   return await studentRepository.findOne(whereStudentEmail);
 };
 
+export const getStudentsByIds = async (
+  studentIds: (number | undefined | null)[],
+  studentRepository: StudentRepository,
+) => {
+  const whereStudentIdsBuilder = new WhereBuilder();
+  const whereStudentIds = whereStudentIdsBuilder.inq('id', studentIds);
+  return await studentRepository.find(whereStudentIds);
+};
+
 export const getStudentsRegisteredWithTeacher = async (
   student: Student | null,
-  teacher: Teacher,
+  teacher: Teacher | null,
   registrationRepository: RegistrationRepository,
 ) => {
   if (!student) return [];
+  if (!teacher) return [];
   const whereRegisteredBuilder = new WhereBuilder();
   const whereRegistered = whereRegisteredBuilder.and([
     {studentId: student.id},
@@ -84,4 +94,17 @@ export const getTeacherIds = async (
     whereEmails = whereEmailsBuilder.eq('email', emails);
   }
   return await teacherRepository.find(whereEmails);
+};
+
+export const parseMentionedeMails = (message: string) => {
+  const phrase = message.split(' ');
+  return phrase
+    .filter(str => {
+      console.log(str[0]);
+
+      return str[0] === '@';
+    })
+    .map(email => {
+      return email.slice(1);
+    });
 };
