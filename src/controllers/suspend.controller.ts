@@ -29,20 +29,18 @@ export class SuspendController {
   async create(@requestBody() suspend: Suspend) {
     let student: Student[];
 
+    /** find student */
     const whereStudentBuilder = new WhereBuilder();
     const whereStudent = whereStudentBuilder.eq('email', suspend.email);
-
     student = await this.studentRepository.find(whereStudent);
 
     if (student.length === 0) {
       throw new HttpErrors[403](`${suspend.email} does not exist!`);
     }
 
-    const result = await this.studentRepository.update(
+    /** update student suspended property */
+    await this.studentRepository.update(
       new Student({...student[0], suspended: true}),
     );
-
-    console.log(result);
-    debugger;
   }
 }
