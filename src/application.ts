@@ -9,6 +9,7 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import * as path from 'path';
 import {MySequence} from './sequence';
+import {timingSafeEqual} from 'crypto';
 
 export class Lb4RegisterApiApplication extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -22,10 +23,13 @@ export class Lb4RegisterApiApplication extends BootMixin(
     // Set up default home page
     this.static('/', path.join(__dirname, '../../public'));
 
+    this.basePath('/api');
+
     // Customize @loopback/rest-explorer configuration here
     this.bind(RestExplorerBindings.CONFIG).to({
       path: '/explorer',
     });
+
     this.component(RestExplorerComponent);
 
     this.projectRoot = __dirname;
