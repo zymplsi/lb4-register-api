@@ -79,25 +79,21 @@ export class RegisterController {
     );
 
     /** generate students Id list */
-    const studentsIdList = await Promise.all(
-      students.map(student => student.id),
-    );
+    const studentsIdList = students.map(student => student.id);
 
     /** list students already registered with this teacher to ensure
      * no duplicate entries
      */
-    const studentsRegisteredWithTeacherIdList = await Promise.all(
-      studentsRegisteredWithTeacher.map(registration => {
+    const studentsRegisteredWithTeacherIdList = studentsRegisteredWithTeacher.map(
+      registration => {
         console.log(registration);
         return registration[0].studentId;
-      }),
+      },
     );
 
     /** list new students not registered with this teacher*/
-    const studentsNotRegisteredWithTeacherIdList = await Promise.all(
-      studentsIdList.filter(
-        studentId => !studentsRegisteredWithTeacherIdList.includes(studentId),
-      ),
+    const studentsNotRegisteredWithTeacherIdList = studentsIdList.filter(
+      studentId => !studentsRegisteredWithTeacherIdList.includes(studentId),
     );
 
     /** register new student with this teacher*/
