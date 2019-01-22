@@ -7,9 +7,9 @@ import {
   StudentRepository,
 } from '../repositories';
 import {
-  getTeacher,
-  getStudent,
   getStudentsRegisteredWithTeacher,
+  getTeacherByEmail,
+  getStudentByEmail,
 } from './helper';
 
 export class RegisterController {
@@ -38,16 +38,23 @@ export class RegisterController {
       throw new HttpErrors[403](`require students email!`);
     }
 
-    /** get teacher from Teacher repository, throw Error if doesnt exist */
-    const teacher = await getTeacher(teacherEmail, this.teacherRepository);
+    /** finds the specified teacher in teacher repository,
+     *  throw Error if doesn't exist
+     * */
+    const teacher = await getTeacherByEmail(
+      teacherEmail,
+      this.teacherRepository,
+    );
     if (!teacher) {
       throw new HttpErrors[403](`${teacherEmail} does not exist!`);
     }
 
-    /** get students and create student in Student repository if doesn't exist */
+    /** finds all specified students in student repository
+     *  create specified student not exist in student repository
+     */
     const students = await Promise.all(
       studentEmails.map(async email => {
-        let student = await getStudent(email, this.studentRepository);
+        let student = await getStudentByEmail(email, this.studentRepository);
         if (!student) {
           student = await this.studentRepository.create(
             new Student({
@@ -56,11 +63,12 @@ export class RegisterController {
             }),
           );
         }
+
         return student;
       }),
     );
 
-    /** check if students have registered with this teacher*/
+    /** find student and teacher pair in registration repository*/
     const getStudentsRegisteredWithTeacherResult = await Promise.all(
       students.map(async student => {
         return await getStudentsRegisteredWithTeacher(
@@ -79,14 +87,15 @@ export class RegisterController {
     );
 
     /** generate students Id list */
-    const studentsIdList = students.map(student => student.id);
+    const studentsIdList = students
+      .filter(student => student)
+      .map(student => student.id);
 
     /** list students already registered with this teacher to ensure
      * no duplicate entries
      */
     const studentsRegisteredWithTeacherIdList = studentsRegisteredWithTeacher.map(
       registration => {
-        console.log(registration);
         return registration[0].studentId;
       },
     );
@@ -96,7 +105,7 @@ export class RegisterController {
       studentId => !studentsRegisteredWithTeacherIdList.includes(studentId),
     );
 
-    /** register new student with this teacher*/
+    /** register new student with teacher*/
     await Promise.all(
       studentsNotRegisteredWithTeacherIdList.map(
         async studentIdNotRegistered => {

@@ -7,7 +7,7 @@ import {
   StudentRepository,
 } from '../repositories';
 import {
-  getTeacher,
+  getTeacherByEmail,
   getStudentsByIds,
   getStudentsRegisteredWithTeacher,
   parseMentionedeMails,
@@ -64,7 +64,10 @@ export class RetrieveForNotificationsController {
     }
 
     /** get teacher info */
-    const teacher = await getTeacher(teacherEmail, this.teacherRepository);
+    const teacher = await getTeacherByEmail(
+      teacherEmail,
+      this.teacherRepository,
+    );
 
     /** get list of not suspended students registered with the teacher*/
     const getStudentsRegisteredWithTeacherResult = await Promise.all(

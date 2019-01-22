@@ -6,7 +6,7 @@ import {
 import {Teacher, Student} from '../models';
 import {WhereBuilder, Where} from '@loopback/repository';
 
-export const getTeacher = async (
+export const getTeacherByEmail = async (
   email: string,
   teacherRepository: TeacherRepository,
 ) => {
@@ -15,13 +15,14 @@ export const getTeacher = async (
   return await teacherRepository.findOne(whereTeacherEmail);
 };
 
-export const getStudent = async (
+export const getStudentByEmail = async (
   email: string,
   studentRepository: StudentRepository,
 ) => {
   const whereStudentEmailBuilder = new WhereBuilder();
   const whereStudentEmail = whereStudentEmailBuilder.eq('email', email);
-  return await studentRepository.findOne(whereStudentEmail);
+  const result = await studentRepository.findOne(whereStudentEmail);
+  return result;
 };
 
 export const getStudentsByIds = async (
