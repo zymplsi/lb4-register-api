@@ -9,12 +9,11 @@ import {
   StudentRepository,
 } from '../../../src/repositories';
 import {RegisterController} from '../../../src/controllers';
-import {Register, Teacher, Student, Registration} from '../../../src/models';
+import {Register, Teacher, Student} from '../../../src/models';
 import {
   givenTeacher,
   givenStudents,
   givenStudent,
-  givenRegistration,
   givenRegister,
 } from '../../helpers';
 
@@ -29,10 +28,7 @@ describe('Register Controller (unit)', () => {
   let register: Register;
   let teacher: Teacher;
   let student: Student;
-  let teachers: Teacher[];
   let students: Student[];
-  let registration: Registration;
-  let studentEmails: string[];
 
   beforeEach(givenStubbedRegistrationRepository);
   beforeEach(() => {
@@ -51,7 +47,7 @@ describe('Register Controller (unit)', () => {
       await teacherRepository.stubs.findOne.resolves(teacher);
       await registerController.create(register);
       sinon.assert.calledWithMatch(teacherRepository.stubs.findOne, {
-        where: {email: teacher.email},
+        where: {email: {eq: teacher.email}},
       });
     });
 
@@ -72,13 +68,13 @@ describe('Register Controller (unit)', () => {
       await registerController.create(register);
 
       sinon.assert.calledWithMatch(studentRepository.stubs.findOne, {
-        where: {email: students[0].email},
+        where: {email: {eq: students[0].email}},
       });
       sinon.assert.calledWithMatch(studentRepository.stubs.findOne, {
-        where: {email: students[1].email},
+        where: {email: {eq: students[1].email}},
       });
       sinon.assert.calledWithMatch(studentRepository.stubs.findOne, {
-        where: {email: students[2].email},
+        where: {email: {eq: students[2].email}},
       });
     });
 

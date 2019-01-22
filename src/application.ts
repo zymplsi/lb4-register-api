@@ -9,7 +9,7 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import * as path from 'path';
 import {MySequence} from './sequence';
-import {timingSafeEqual} from 'crypto';
+// import {timingSafeEqual} from 'crypto';
 
 export class Lb4RegisterApiApplication extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),

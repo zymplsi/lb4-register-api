@@ -80,35 +80,37 @@ export class RetrieveForNotificationsController {
       }),
     );
 
-    /** get not suspended and registered student their registrations ids */
-    const registeredStudentsId = getStudentsRegisteredWithTeacherResult.map(
-      registration =>
-        registration.length > 0 ? registration[0].studentId : null,
-    );
+    // getStudentsRegisteredWithTeacherResult.le
 
-    /** get registered and not suspended full info from their registration ids */
-    const registeredStudents = await getStudentsByIds(
-      registeredStudentsId,
-      this.studentRepository,
-    );
-    /** get the email for the not suspended and registered students */
-    const registeredStudentsEmail = registeredStudents.map(
-      student => student.email,
-    );
+    // /** get not suspended and registered student their registrations ids */
+    // const registeredStudentsId = getStudentsRegisteredWithTeacherResult[0]
+    // .filter(registration => registration.studentId )
+    //   .map(registration => registration.studentId )
+    //   // .map(registration => registration[0].studentId);
 
-    /** create the email recipients  */
-    const recipients = [
-      ...mentionedNotSuspendedStudentsEmail,
-      ...registeredStudentsEmail,
-    ];
+    // /** get registered and not suspended full info from their registration ids */
+    // const registeredStudents = await getStudentsByIds(
+    //   registeredStudentsId,
+    //   this.studentRepository,
+    // );
+    // /** get the email for the not suspended and registered students */
+    // const registeredStudentsEmail = registeredStudents.map(
+    //   student => student.email,
+    // );
 
-    /** remove duplicate in email recipient list*/
-    const filteredRecipients = recipients.filter((keyword, index) => {
-      return recipients.lastIndexOf(keyword) === index;
-    });
+    // /** create the email recipients  */
+    // const recipients = [
+    //   ...mentionedNotSuspendedStudentsEmail,
+    //   ...registeredStudentsEmail,
+    // ];
 
-    /** send it out!*/
-    return JSON.stringify({recipients: filteredRecipients});
+    // /** remove duplicate in email recipient list*/
+    // const filteredRecipients = recipients.filter((keyword, index) => {
+    //   return recipients.lastIndexOf(keyword) === index;
+    // });
+
+    // /** send it out!*/
+    // return JSON.stringify({recipients: filteredRecipients});
   }
 }
 
