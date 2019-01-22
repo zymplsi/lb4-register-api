@@ -2,7 +2,6 @@ import {
   createStubInstance,
   sinon,
   StubbedInstanceWithSinonAccessor,
-  supertest,
   expect,
 } from '@loopback/testlab';
 import {
@@ -11,14 +10,8 @@ import {
   StudentRepository,
 } from '../../../src/repositories';
 import {CommonStudentsController} from '../../../src/controllers';
-import {Register, Teacher, Student, Registration} from '../../../src/models';
-import {
-  givenTeachers,
-  givenRegistration,
-  givenRegistrations,
-  givenStudents,
-} from '../../helpers';
-import {getCommonNumber} from '../../../src/controllers/helper';
+import {Teacher, Student, Registration} from '../../../src/models';
+import {givenTeachers, givenRegistrations, givenStudents} from '../../helpers';
 
 describe('Common Students Controller (unit)', () => {
   let registrationRepository: StubbedInstanceWithSinonAccessor<
@@ -26,17 +19,11 @@ describe('Common Students Controller (unit)', () => {
   >;
   let teacherRepository: StubbedInstanceWithSinonAccessor<TeacherRepository>;
   let studentRepository: StubbedInstanceWithSinonAccessor<StudentRepository>;
-
   let commonstudentsController: CommonStudentsController;
-  let register: Register;
-  let teacher: Teacher;
   let teachers: Teacher[];
   let teachersEmail: string[];
-  let student: Student;
   let students: Student[];
-  let registration: Registration;
   let registrations: Registration[];
-  let responseStub: sinon.SinonStub;
   let response: string;
 
   beforeEach(givenStubbedRegistrationRepository);
@@ -101,7 +88,6 @@ describe('Common Students Controller (unit)', () => {
         .onCall(2)
         .resolves([registrations[0]]);
       await studentRepository.stubs.find.resolves(students);
-
       await commonstudentsController.find(teachersEmail);
       sinon.assert.callCount(registrationRepository.stubs.find, 3);
       sinon.assert.calledWithMatch(registrationRepository.stubs.find, {

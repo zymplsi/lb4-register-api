@@ -12,7 +12,6 @@ import {
   getTeacherIdsByEmail,
   getTeacherRegistrationsById,
 } from './helper';
-import {K} from 'handlebars';
 
 export class CommonStudentsController {
   constructor(
