@@ -40,7 +40,7 @@ describe('Common Students Controller (unit)', () => {
       teachers = givenTeachers();
       teachersEmail = teachers.filter(t => t).map(t => t.email);
 
-      await teacherRepository.stubs.find.resolves(teachers);
+      teacherRepository.stubs.find.resolves(teachers);
       await commonstudentsController.find(teachersEmail);
       sinon.assert.calledWithMatch(teacherRepository.stubs.find, {
         where: {
@@ -54,8 +54,8 @@ describe('Common Students Controller (unit)', () => {
       teachersEmail = teachers.filter(t => t).map(t => t.email);
       registrations = givenRegistrations();
 
-      await teacherRepository.stubs.find.resolves(teachers);
-      await registrationRepository.stubs.find
+      teacherRepository.stubs.find.resolves(teachers);
+      registrationRepository.stubs.find
         .onCall(0)
         .resolves([registrations[0]])
         .onCall(1)
@@ -79,15 +79,15 @@ describe('Common Students Controller (unit)', () => {
       teachersEmail = teachers.filter(t => t).map(t => t.email);
       registrations = givenRegistrations();
 
-      await teacherRepository.stubs.find.resolves(teachers);
-      await registrationRepository.stubs.find
+      teacherRepository.stubs.find.resolves(teachers);
+      registrationRepository.stubs.find
         .onCall(0)
         .resolves([registrations[0]])
         .onCall(1)
         .resolves([registrations[0]])
         .onCall(2)
         .resolves([registrations[0]]);
-      await studentRepository.stubs.find.resolves(students);
+      studentRepository.stubs.find.resolves(students);
       await commonstudentsController.find(teachersEmail);
       sinon.assert.callCount(registrationRepository.stubs.find, 3);
       sinon.assert.calledWithMatch(registrationRepository.stubs.find, {

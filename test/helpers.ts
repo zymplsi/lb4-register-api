@@ -1,4 +1,10 @@
-import {Teacher, Student, Registration, Register} from '../src/models';
+import {
+  Teacher,
+  Student,
+  Registration,
+  RetrieveForNotifications,
+  Register,
+} from '../src/models';
 
 export function givenTeacher(teacher?: Partial<Teacher>) {
   const data = Object.assign(
@@ -71,6 +77,37 @@ export function givenRegistrations(registration?: Partial<Registration>) {
     new Registration(registration1),
     new Registration(registration2),
     new Registration(registration3),
+  ];
+}
+
+export function givenNotifications(
+  notification?: Partial<RetrieveForNotifications>,
+) {
+  const notification1 = Object.assign(
+    {
+      teacher: 'teacher1@abc.com',
+      notification: '@student1@abc.com',
+    },
+    notification,
+  );
+  const notification2 = Object.assign(
+    {
+      teacher: 'teacher2@abc.com',
+      notification: '@student2@abc.com',
+    },
+    notification,
+  );
+  const notification3 = Object.assign(
+    {
+      teacher: 'teacher3@abc.com',
+      notification: '@student3@abc.com',
+    },
+    notification,
+  );
+  return [
+    new RetrieveForNotifications(notification1),
+    new RetrieveForNotifications(notification2),
+    new RetrieveForNotifications(notification3),
   ];
 }
 

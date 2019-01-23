@@ -44,7 +44,7 @@ describe('Register Controller (unit)', () => {
       teacher = givenTeacher();
       register = givenRegister();
 
-      await teacherRepository.stubs.findOne.resolves(teacher);
+      teacherRepository.stubs.findOne.resolves(teacher);
       await registerController.create(register);
       sinon.assert.calledWithMatch(teacherRepository.stubs.findOne, {
         where: {email: {eq: teacher.email}},
@@ -56,8 +56,8 @@ describe('Register Controller (unit)', () => {
       students = givenStudents();
       register = givenRegister();
 
-      await teacherRepository.stubs.findOne.resolves(teacher);
-      await studentRepository.stubs.findOne
+      teacherRepository.stubs.findOne.resolves(teacher);
+      studentRepository.stubs.findOne
         .onCall(0)
         .resolves(students[0])
         .onCall(1)
@@ -82,8 +82,8 @@ describe('Register Controller (unit)', () => {
       student = givenStudent({
         suspended: false,
       });
-      await teacherRepository.stubs.findOne.resolves(teacher);
-      await studentRepository.stubs.findOne.resolves(null);
+      teacherRepository.stubs.findOne.resolves(teacher);
+      studentRepository.stubs.findOne.resolves(null);
       await registerController.create(register);
       sinon.assert.calledWithMatch(studentRepository.stubs.create, student);
     });
@@ -93,8 +93,8 @@ describe('Register Controller (unit)', () => {
       teacher = givenTeacher();
       register = givenRegister();
 
-      await teacherRepository.stubs.findOne.resolves(teacher);
-      await studentRepository.stubs.findOne.onCall(0).resolves(students[0]);
+      teacherRepository.stubs.findOne.resolves(teacher);
+      studentRepository.stubs.findOne.onCall(0).resolves(students[0]);
       await registerController.create(register);
       sinon.assert.calledWithMatch(registrationRepository.stubs.find, {
         where: {
@@ -108,8 +108,8 @@ describe('Register Controller (unit)', () => {
       teacher = givenTeacher();
       register = givenRegister();
 
-      await teacherRepository.stubs.findOne.resolves(teacher);
-      await studentRepository.stubs.findOne.onCall(0).resolves(students[0]);
+      teacherRepository.stubs.findOne.resolves(teacher);
+      studentRepository.stubs.findOne.onCall(0).resolves(students[0]);
       await registerController.create(register);
       sinon.assert.calledWithMatch(registrationRepository.stubs.create, {
         studentId: students[0].id,

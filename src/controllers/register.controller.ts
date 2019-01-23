@@ -7,7 +7,7 @@ import {
   StudentRepository,
 } from '../repositories';
 import {
-  getStudentsRegisteredWithTeacher,
+  getNotSuspendedRegisteredStudents,
   getTeacherByEmail,
   getStudentByEmail,
 } from './helper';
@@ -69,9 +69,9 @@ export class RegisterController {
     );
 
     /** find student and teacher pair in registration repository*/
-    const getStudentsRegisteredWithTeacherResult = await Promise.all(
+    const getNotSuspendedRegisteredStudentsResult = await Promise.all(
       students.map(async student => {
-        return await getStudentsRegisteredWithTeacher(
+        return await getNotSuspendedRegisteredStudents(
           student,
           teacher,
           this.registrationRepository,
@@ -80,7 +80,7 @@ export class RegisterController {
     );
 
     /** filter empty arrays from the registered student list*/
-    const studentsRegisteredWithTeacher = getStudentsRegisteredWithTeacherResult.filter(
+    const studentsRegisteredWithTeacher = getNotSuspendedRegisteredStudentsResult.filter(
       student => {
         return student && student.length > 0 ? true : false;
       },

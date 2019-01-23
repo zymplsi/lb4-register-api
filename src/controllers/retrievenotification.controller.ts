@@ -1,4 +1,4 @@
-import {repository, WhereBuilder} from '@loopback/repository';
+import {repository} from '@loopback/repository';
 import {post, requestBody} from '@loopback/rest';
 import {RetrieveForNotifications} from '../models';
 import {
@@ -8,9 +8,11 @@ import {
 } from '../repositories';
 import {
   getTeacherByEmail,
-  getStudentsByIds,
-  getStudentsRegisteredWithTeacher,
+  getNotSuspendedRegisteredStudents,
   parseMentionedeMails,
+  getStudentsNotSuspendedById,
+  getStudentsByIds,
+  getNotSuspendedRegisteredStudentsId,
 } from './helper';
 
 export class RetrieveForNotificationsController {
@@ -41,10 +43,10 @@ export class RetrieveForNotificationsController {
     const notification = retrievefornotifications.notification;
 
     /** parse student's email from messade */
-    const parsedEmails = parseMentionedeMails(notification);
+    const parsedMentionedStudentEmails = parseMentionedeMails(notification);
 
-    /** get all not suspended students*/
-    const notSuspendedStudents = await getStudentsNotSuspended(
+    /** find all not suspended students*/
+    const notSuspendedStudents = await getStudentsNotSuspendedById(
       this.studentRepository,
     );
 
@@ -55,24 +57,24 @@ export class RetrieveForNotificationsController {
 
     /** filter mentioned students email against not suspended student list */
     const mentionedNotSuspendedStudentsEmail = [];
-    if (parsedEmails) {
-      for (let email of parsedEmails) {
+    if (parsedMentionedStudentEmails) {
+      for (let email of parsedMentionedStudentEmails) {
         if (notSuspendedStudentsEmail.includes(email)) {
           mentionedNotSuspendedStudentsEmail.push(email);
         }
       }
     }
 
-    /** get teacher info */
+    /** find specified teacher info */
     const teacher = await getTeacherByEmail(
       teacherEmail,
       this.teacherRepository,
     );
 
-    /** get list of not suspended students registered with the teacher*/
-    const getStudentsRegisteredWithTeacherResult = await Promise.all(
+    /** find not suspended student registered with specified teacher */
+    const getNotSuspendedRegisteredStudentsResult = await Promise.all(
       notSuspendedStudents.map(async student => {
-        return await getStudentsRegisteredWithTeacher(
+        return await getNotSuspendedRegisteredStudents(
           student,
           teacher,
           this.registrationRepository,
@@ -80,44 +82,35 @@ export class RetrieveForNotificationsController {
       }),
     );
 
-    // getStudentsRegisteredWithTeacherResult.le
+    /** get not suspended and registered student their registrations ids */
+    let notSuspendedRegisteredStudentsId = getNotSuspendedRegisteredStudentsId(
+      getNotSuspendedRegisteredStudentsResult,
+    );
 
-    // /** get not suspended and registered student their registrations ids */
-    // const registeredStudentsId = getStudentsRegisteredWithTeacherResult[0]
-    // .filter(registration => registration.studentId )
-    //   .map(registration => registration.studentId )
-    //   // .map(registration => registration[0].studentId);
+    /** find not suspended and registered students full info
+     * from student repository*/
+    const notSuspendedRegisteredStudents = await getStudentsByIds(
+      notSuspendedRegisteredStudentsId,
+      this.studentRepository,
+    );
 
-    // /** get registered and not suspended full info from their registration ids */
-    // const registeredStudents = await getStudentsByIds(
-    //   registeredStudentsId,
-    //   this.studentRepository,
-    // );
-    // /** get the email for the not suspended and registered students */
-    // const registeredStudentsEmail = registeredStudents.map(
-    //   student => student.email,
-    // );
+    /** get the email for the not suspended and registered students */
+    const notSuspendedRegisteredStudentsEmail = notSuspendedRegisteredStudents.map(
+      student => student.email,
+    );
 
-    // /** create the email recipients  */
-    // const recipients = [
-    //   ...mentionedNotSuspendedStudentsEmail,
-    //   ...registeredStudentsEmail,
-    // ];
+    /** combine mentioned student with not suspended and registered student */
+    const recipients = [
+      ...mentionedNotSuspendedStudentsEmail,
+      ...notSuspendedRegisteredStudentsEmail,
+    ];
 
-    // /** remove duplicate in email recipient list*/
-    // const filteredRecipients = recipients.filter((keyword, index) => {
-    //   return recipients.lastIndexOf(keyword) === index;
-    // });
+    /** remove duplicate in email recipient list*/
+    const filteredRecipients = recipients.filter((keyword, index) => {
+      return recipients.lastIndexOf(keyword) === index;
+    });
 
     // /** send it out!*/
-    // return JSON.stringify({recipients: filteredRecipients});
+    return JSON.stringify({recipients: filteredRecipients});
   }
 }
-
-export const getStudentsNotSuspended = async (
-  studentRepository: StudentRepository,
-) => {
-  const whereStudentIdBuilder = new WhereBuilder();
-  const whereStudentId = whereStudentIdBuilder.eq('suspended', false);
-  return await studentRepository.find(whereStudentId);
-};

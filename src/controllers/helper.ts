@@ -3,7 +3,7 @@ import {
   TeacherRepository,
   StudentRepository,
 } from '../repositories';
-import {Teacher, Student} from '../models';
+import {Teacher, Student, Registration} from '../models';
 
 export const getTeacherByEmail = async (
   email: string,
@@ -16,11 +16,11 @@ export const getStudentByEmail = async (
 ) => await studentRepository.findOne({where: {email: {eq: email}}});
 
 export const getStudentsByIds = async (
-  studentIds: number[],
+  studentIds: (number | undefined)[],
   studentRepository: StudentRepository,
 ) => await studentRepository.find({where: {id: {inq: studentIds}}});
 
-export const getStudentsRegisteredWithTeacher = async (
+export const getNotSuspendedRegisteredStudents = async (
   student: Student | null,
   teacher: Teacher | null,
   registrationRepository: RegistrationRepository,
@@ -51,6 +51,26 @@ export const getTeacherRegistrationsById = async (
   teacherId: number | undefined,
   registrationRepository: RegistrationRepository,
 ) => await registrationRepository.find({where: {teacherId: {eq: teacherId}}});
+
+export const getStudentsNotSuspendedById = async (
+  studentRepository: StudentRepository,
+) => await studentRepository.find({where: {suspended: {eq: false}}});
+
+export const getNotSuspendedRegisteredStudentsId = (
+  notSuspendedRegisteredStudents: Registration[][],
+) => {
+  return notSuspendedRegisteredStudents
+    .filter(registrations => registrations && registrations.length > 0)
+    .map(registrations =>
+      registrations.map(registration => registration.studentId),
+    )
+    .reduce((acc: number[], val: number[]) => {
+      for (let v of val) {
+        acc.push(v);
+      }
+      return acc;
+    }, []);
+};
 
 export const parseMentionedeMails = (message: string) => {
   const phrase = message.split(' ');
