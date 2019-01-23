@@ -37,26 +37,31 @@ describe('Register Controller (unit)', () => {
       teacherRepository,
       studentRepository,
     );
+    teacher = givenTeacher();
+    register = givenRegister();
+    students = givenStudents();
+    register = givenRegister();
   });
 
   describe('register()', () => {
     it('finds the specified teacher in teacher repository', async () => {
-      teacher = givenTeacher();
-      register = givenRegister();
-
+      /** resolve, find specified teacher */
       teacherRepository.stubs.findOne.resolves(teacher);
+
+      /** POST register students with specified teacher */
       await registerController.create(register);
+
+      /** assert find teacher by email in teacher respository */
       sinon.assert.calledWithMatch(teacherRepository.stubs.findOne, {
         where: {email: {eq: teacher.email}},
       });
     });
 
     it('find all specified students in student repository', async () => {
-      teacher = givenTeacher();
-      students = givenStudents();
-      register = givenRegister();
-
+      /** resolve, find specified teacher */
       teacherRepository.stubs.findOne.resolves(teacher);
+
+      /** call 0-2 - find specified students in student repository */
       studentRepository.stubs.findOne
         .onCall(0)
         .resolves(students[0])
@@ -65,8 +70,10 @@ describe('Register Controller (unit)', () => {
         .onCall(2)
         .resolves(students[2]);
 
+      /** POST register students with specified teacher */
       await registerController.create(register);
 
+      /** assert find students by email in student respository */
       sinon.assert.calledWithMatch(studentRepository.stubs.findOne, {
         where: {email: {eq: students[0].email}},
       });
@@ -79,23 +86,35 @@ describe('Register Controller (unit)', () => {
     });
 
     it('create specified student not exist in student repository', async () => {
+      /** given a new student */
       student = givenStudent({
         suspended: false,
       });
+
+      /** resolve, find specified teacher */
       teacherRepository.stubs.findOne.resolves(teacher);
+
+      /** resolve, find specified student -> dont exist */
       studentRepository.stubs.findOne.resolves(null);
+
+      /** POST register students with specified teacher */
       await registerController.create(register);
+
+      /** assert create a new student in student repository   */
       sinon.assert.calledWithMatch(studentRepository.stubs.create, student);
     });
 
     it('find student and teacher pair in registration repository', async () => {
-      students = givenStudents();
-      teacher = givenTeacher();
-      register = givenRegister();
-
+      /** resolve, find specified teacher */
       teacherRepository.stubs.findOne.resolves(teacher);
+
+      /** Call 0 - resolve, find specified student -> id 1 */
       studentRepository.stubs.findOne.onCall(0).resolves(students[0]);
+
+      /** POST register students with specified teacher */
       await registerController.create(register);
+
+      /** assert find student and teacher pair in registration repository */
       sinon.assert.calledWithMatch(registrationRepository.stubs.find, {
         where: {
           and: [{studentId: students[0].id}, {teacherId: teacher.id}],
@@ -104,13 +123,16 @@ describe('Register Controller (unit)', () => {
     });
 
     it('register new student with teacher', async () => {
-      students = givenStudents();
-      teacher = givenTeacher();
-      register = givenRegister();
-
+      /** resolve, find specified teacher */
       teacherRepository.stubs.findOne.resolves(teacher);
+
+      /** Call 0 - resolve, find specified student -> id 1 */
       studentRepository.stubs.findOne.onCall(0).resolves(students[0]);
+
+      /** POST register students with specified teacher */
       await registerController.create(register);
+
+      /** assert create student and teacher pair in registration repository */
       sinon.assert.calledWithMatch(registrationRepository.stubs.create, {
         studentId: students[0].id,
         teacherId: teacher.id,

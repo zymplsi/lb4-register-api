@@ -39,8 +39,7 @@ export class RegisterController {
     }
 
     /** finds the specified teacher in teacher repository,
-     *  throw Error if doesn't exist
-     * */
+     *  throw Error if doesn't exist */
     const teacher = await getTeacherByEmail(
       teacherEmail,
       this.teacherRepository,
@@ -50,8 +49,7 @@ export class RegisterController {
     }
 
     /** finds all specified students in student repository
-     *  create specified student not exist in student repository
-     */
+     *  create specified student not exist in student repository */
     const students = await Promise.all(
       studentEmails.map(async email => {
         let student = await getStudentByEmail(email, this.studentRepository);
@@ -63,12 +61,11 @@ export class RegisterController {
             }),
           );
         }
-
         return student;
       }),
     );
 
-    /** find student and teacher pair in registration repository*/
+    /** find student and teacher pair in registration repository */
     const getNotSuspendedRegisteredStudentsResult = await Promise.all(
       students.map(async student => {
         return await getNotSuspendedRegisteredStudents(
@@ -92,20 +89,19 @@ export class RegisterController {
       .map(student => student.id);
 
     /** list students already registered with this teacher to ensure
-     * no duplicate entries
-     */
+     * no duplicate entries */
     const studentsRegisteredWithTeacherIdList = studentsRegisteredWithTeacher.map(
       registration => {
         return registration[0].studentId;
       },
     );
 
-    /** list new students not registered with this teacher*/
+    /** list new students not registered with specified teacher*/
     const studentsNotRegisteredWithTeacherIdList = studentsIdList.filter(
       studentId => !studentsRegisteredWithTeacherIdList.includes(studentId),
     );
 
-    /** register new student with teacher*/
+    /** register new student with specified teacher*/
     await Promise.all(
       studentsNotRegisteredWithTeacherIdList.map(
         async studentIdNotRegistered => {
