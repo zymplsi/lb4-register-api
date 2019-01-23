@@ -47,6 +47,14 @@ Launch the browser to http://localhost:3000/api
 $ npm run migrate
 ```
 
+#### Unit Tests
+
+There are unit tests for the 4 API controllers.
+
+```sh
+$ npm run test
+```
+
 ### API Explorer
 
 The API endpoints are available on the API Explorer at http://localhost:3000/api.
