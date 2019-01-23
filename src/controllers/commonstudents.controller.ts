@@ -35,7 +35,7 @@ export class CommonStudentsController {
   async find(
     @param.array('teacher', 'query', {type: 'string'}) emails: string[],
   ) {
-    /** find all teacher Ids*/
+    /** find all specified teachers*/
     const teachers = await getTeacherIdsByEmail(emails, this.teacherRepository);
 
     /** no teacher found, throw error*/
@@ -43,10 +43,10 @@ export class CommonStudentsController {
       throw new HttpErrors[403]('No teacher record found!');
     }
 
-    /** find all teachers with students registered
-     * in registration repository
-     * */
+    /** find all specified teachers */
     const teachersId = teachers.map(teacher => teacher.id);
+
+    /** find specified teachers in registration repository */
     const teachersRegistrations = await Promise.all(
       teachersId.map(
         async teacherId =>

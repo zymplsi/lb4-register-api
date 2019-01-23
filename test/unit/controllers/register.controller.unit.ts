@@ -44,7 +44,7 @@ describe('Register Controller (unit)', () => {
   });
 
   describe('register()', () => {
-    it('finds the specified teacher in teacher repository', async () => {
+    it('find the specified teacher in teacher repository', async () => {
       /** resolve, find specified teacher */
       teacherRepository.stubs.findOne.resolves(teacher);
 
