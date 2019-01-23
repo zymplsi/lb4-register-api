@@ -1,4 +1,4 @@
-import {repository, WhereBuilder} from '@loopback/repository';
+import {repository} from '@loopback/repository';
 import {post, requestBody, HttpErrors} from '@loopback/rest';
 import {Student} from '../models';
 import {
@@ -7,6 +7,7 @@ import {
   StudentRepository,
 } from '../repositories';
 import {Suspend} from '../models/suspend.model';
+import {getStudentByEmail} from './helper';
 
 export class SuspendController {
   constructor(
@@ -27,20 +28,20 @@ export class SuspendController {
     },
   })
   async create(@requestBody() suspend: Suspend) {
-    let student: Student[];
+    /** find student to suspend */
+    let student = await getStudentByEmail(
+      suspend.email,
+      this.studentRepository,
+    );
 
-    /** find student */
-    const whereStudentBuilder = new WhereBuilder();
-    const whereStudent = whereStudentBuilder.eq('email', suspend.email);
-    student = await this.studentRepository.find(whereStudent);
-
-    if (student.length === 0) {
+    /** student does not exist, throw error */
+    if (!student) {
       throw new HttpErrors[403](`${suspend.email} does not exist!`);
     }
 
     /** update student suspended property */
     await this.studentRepository.update(
-      new Student({...student[0], suspended: true}),
+      new Student({...student, suspended: true}),
     );
   }
 }
